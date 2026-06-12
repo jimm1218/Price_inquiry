@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-06-12T00:00:00.000Z" agent="5.0" version="18.0.1">
+  <diagram name="50 Startups ML Workflow - Optimized" id="workflow">
+    <mxGraphModel dx="1400" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1600" background="#f5f5f5" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Main Title -->
+        <mxCell id="title" value="50 Startups Profit Prediction - CRISP-DM Complete Workflow" style="text;html=1;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;fillColor=#2c3e50;strokeColor=none;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="0" y="10" width="2000" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- PHASE 1 -->
+        <mxCell id="phase1_bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fef5e7;strokeColor=#f39c12;strokeWidth=3;opacity=20;" vertex="1" parent="1">
+          <mxGeometry x="20" y="80" width="450" height="200" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="phase1_label" value="PHASE 1: Business Understanding" style="text;html=1;fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;fontColor=#f39c12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="85" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="bus_goal" value="Goal: Predict Startup Profit&#10;Input: R&amp;D, Marketing, Admin, State&#10;Output: Profit (USD)&#10;Success: Maximize R2, Minimize RMSE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9e6;strokeColor=#f39c12;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="400" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- PHASE 2 -->
+        <mxCell id="phase2_bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fdeef4;strokeColor=#e74c3c;strokeWidth=3;opacity=20;" vertex="1" parent="1">
+          <mxGeometry x="500" y="80" width="480" height="200" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="phase2_label" value="PHASE 2: Data Understanding" style="text;html=1;fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;fontColor=#e74c3c;" vertex="1" parent="1">
+          <mxGeometry x="510" y="85" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="eda_data" value="50 Startups Dataset&#10;50 rows, 4 features&#10;No Missing Values" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fadbd8;strokeColor=#e74c3c;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="eda_findings" value="Key Findings:&#10;R&amp;D: 0.97 (Perfect!)&#10;Marketing: 0.75&#10;Admin: 0.20&#10;State: 0.05" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fadbd8;strokeColor=#e74c3c;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="740" y="120" width="220" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow_1to2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" edge="1" parent="1" source="bus_goal" target="eda_data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- PHASE 3 -->
+        <mxCell id="phase3_bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eef5fb;strokeColor=#3498db;strokeWidth=3;opacity=20;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="80" width="450" height="200" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="phase3_label" value="PHASE 3: Data Preparation" style="text;html=1;fontSize=12;fontStyle=1;align=left;fillColor=none;strokeColor=none;fontColor=#3498db;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="85" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="prep_steps" value="One-Hot Encoding (State)&#10;StandardScaler Normalization&#10;Train-Test Split: 80-20&#10;Final Features: 5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d6eaf8;strokeColor=#3498db;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="120" width="410" height="140" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow_eda_to_prep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" edge="1" parent="1" source="eda_findings" target="prep_steps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- PHASE 4: MODELING -->
+        <mxCell id="phase4_title" value="PHASE 4: Modeling - 5 Models x 16 Feature Combinations = 80 Tests" style="text;html=1;fontSize=12;fontStyle=1;align=center;fillColor=#2c3e50;fontColor=#FFFFFF;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="310" width="1440" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow_to_modeling" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" edge="1" parent="1" source="prep_steps" target="phase4_title">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Models -->
+        <mxCell id="model1" value="Linear Regression&#10;R2: 0.9265&#10;RMSE: 7,714" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd700;strokeColor=#f39c12;strokeWidth=3;fontSize=9;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="model2" value="Lasso L1&#10;R2: 0.9250&#10;Stable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#27ae60;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="210" y="380" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="model3" value="Ridge L2&#10;R2: 0.9250&#10;Robust" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b3e5fc;strokeColor=#0277bd;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="380" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="model4" value="Random Forest&#10;R2: 0.9324 ★&#10;Best Score" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ff6b6b;strokeColor=#c92a2a;strokeWidth=2;fontSize=9;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="550" y="380" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="model5" value="Gradient Boost&#10;R2: 0.9240&#10;Complex" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ff6f00;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="720" y="380" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- PHASE 5 -->
+        <mxCell id="eval_box" value="PHASE 5: Evaluation - Feature Selection&#10;5 Algorithms Consensus: R&amp;D Spend ONLY&#10;1 Feature: R2=0.926 (Optimal)&#10;5 Features: R2=0.918 (Degradation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ff9800;fontSize=9;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="820" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow_models_to_eval" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" edge="1" parent="1" source="model1" target="eval_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- PHASE 6 -->
+        <mxCell id="recommended" value="PHASE 6: FINAL SELECTION&#10;✓ LINEAR REGRESSION (RECOMMENDED)&#10;Formula: Profit = -5,919.97 + 0.804 × R&amp;D Spend&#10;R2: 0.9265 | RMSE: $7,714&#10;Why: Simple, Interpretable, Fast, Maintainable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4caf50;strokeColor=#1b5e20;strokeWidth=3;fontSize=10;align=center;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="540" width="540" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arrow_eval_to_final" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;" edge="1" parent="1" source="eval_box" target="recommended">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- KEY INSIGHTS -->
+        <mxCell id="insights" value="KEY BUSINESS INSIGHTS&#10;1. R&amp;D Drives Profit (r=0.97) → Prioritize R&amp;D Investment&#10;2. Marketing Limited Effect (r=0.75) → Evaluate ROI&#10;3. Admin Negligible (r=0.20) → Streamline&#10;4. Location Irrelevant (r=0.05) → No Geographic Advantage&#10;5. Simple &gt; Complex (0.9265 vs 0.9324) → Occam's Razor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;fontSize=9;align=left;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="700" width="1420" height="130" as="geometry" />
+        </mxCell>
+        
+        <!-- Footer -->
+        <mxCell id="footer" value="Dataset: 50 Startups | Tests: 80 | Accuracy: 92.65% | Status: Production Ready" style="text;html=1;fontSize=9;align=center;fillColor=#2c3e50;fontColor=#FFFFFF;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="0" y="1550" width="2000" height="40" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+        
+        <!-- Stage 1: Data Collection -->
+        <mxCell id="stage1" value="📊 第一階段：資料收集&#10;50 Startups Dataset&#10;(R&amp;D, Marketing, Admin, State, Profit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="200" height="80" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
