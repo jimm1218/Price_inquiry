@@ -258,12 +258,18 @@ def scrape_shopee(keyword, max_pages=3):
                     headless=is_headless_env(),
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                     locale="zh-TW",
-                    viewport={"width": 1280, "height": 800}
+                    viewport={"width": 1280, "height": 800},
+                    ignore_default_args=["--enable-automation"],
+                    args=["--disable-blink-features=AutomationControlled"]
                 )
             except Exception as e_launch:
                 print(f"[蝦皮購物] 無法開啟持久化瀏覽器會話 (可能目錄被鎖定): {e_launch}。嘗試使用臨時無痕會話...")
                 using_persistent = False
-                browser = p.chromium.launch(headless=is_headless_env())
+                browser = p.chromium.launch(
+                    headless=is_headless_env(),
+                    ignore_default_args=["--enable-automation"],
+                    args=["--disable-blink-features=AutomationControlled"]
+                )
                 context = browser.new_context(
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                     locale="zh-TW",
@@ -422,7 +428,11 @@ def scrape_surugaya(keyword):
     try:
         with sync_playwright() as p:
             # Setting headless mode dynamically based on running environment
-            browser = p.chromium.launch(headless=is_headless_env())
+            browser = p.chromium.launch(
+                headless=is_headless_env(),
+                ignore_default_args=["--enable-automation"],
+                args=["--disable-blink-features=AutomationControlled"]
+            )
             context = browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="ja-JP"
