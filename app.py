@@ -36,7 +36,7 @@ def scrape_surugaya(keyword):
         soup = BeautifulSoup(res.text, 'html.parser')
         products = []
         # 需根據駿河屋當前的 HTML 結構調整選擇器
-        items = soup.select('.item_list_box')[:5] # 取前 5 個結果
+        items = soup.select('.item_list_box') # 取前 5 個結果[:5]
         for item in items:
             title = item.select_one('.title a').text.strip()
             price_str = item.select_one('.price').text.replace('￥', '').replace(',', '').strip()
