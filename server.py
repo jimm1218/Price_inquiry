@@ -8,6 +8,14 @@ import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from concurrent.futures import ThreadPoolExecutor
 
+def is_headless_env():
+    # Detect if running on a headless cloud platform (e.g. Render) or Linux without GUI display
+    if os.environ.get('RENDER') == 'true':
+        return True
+    if sys.platform.startswith('linux') and 'DISPLAY' not in os.environ:
+        return True
+    return False
+
 # Define helper to clean and extract price
 def extract_numeric_price(price_str):
     if not price_str:
@@ -238,7 +246,7 @@ def scrape_shopee(keyword, max_pages=3):
             print("[蝦皮購物] 啟動 Chromium 瀏覽器並加載登入會話...")
             context = p.chromium.launch_persistent_context(
                 user_data_dir=user_data_dir,
-                headless=False,
+                headless=is_headless_env(),
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="zh-TW",
                 viewport={"width": 1280, "height": 800}
@@ -394,8 +402,8 @@ def scrape_surugaya(keyword):
     
     try:
         with sync_playwright() as p:
-            # Setting headless=False allows the user to solve cloudflare challenge if prompt shows up
-            browser = p.chromium.launch(headless=False)
+            # Setting headless mode dynamically based on running environment
+            browser = p.chromium.launch(headless=is_headless_env())
             context = browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="ja-JP"
