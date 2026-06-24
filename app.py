@@ -3,10 +3,19 @@ import urllib.parse
 import json
 import re
 import os
+import sys
 import time
 from flask import Flask, request, jsonify, send_from_directory
 from concurrent.futures import ThreadPoolExecutor
 from bs4 import BeautifulSoup
+
+# Reconfigure stdout/stderr to UTF-8 to prevent CP950 UnicodeEncodeError on Windows
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 
 app = Flask(__name__, static_folder='.')
 

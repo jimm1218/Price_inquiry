@@ -4,9 +4,18 @@ import json
 import re
 import os
 import sys
+import time
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from concurrent.futures import ThreadPoolExecutor
+
+# Reconfigure stdout/stderr to UTF-8 to prevent CP950 UnicodeEncodeError on Windows
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
 
 def is_headless_env():
     # Detect if running on a headless cloud platform (e.g. Render) or Linux without GUI display
@@ -62,7 +71,6 @@ def scrape_pchome(keyword, max_pages=3):
     for i in range(0, len(pages), chunk_size):
         chunk = pages[i:i+chunk_size]
         if i > 0:
-            import time
             time.sleep(0.5)
             
         with ThreadPoolExecutor(max_workers=len(chunk)) as executor:
@@ -117,7 +125,6 @@ def scrape_yahoo(keyword, max_pages=3):
     for i in range(0, len(pages), chunk_size):
         chunk = pages[i:i+chunk_size]
         if i > 0:
-            import time
             time.sleep(0.5)
             
         with ThreadPoolExecutor(max_workers=len(chunk)) as executor:
@@ -216,7 +223,6 @@ def scrape_amazon(keyword, max_pages=3):
     for i in range(0, len(pages), chunk_size):
         chunk = pages[i:i+chunk_size]
         if i > 0:
-            import time
             time.sleep(0.5)
             
         with ThreadPoolExecutor(max_workers=len(chunk)) as executor:
@@ -244,17 +250,28 @@ def scrape_shopee(keyword, max_pages=3):
     try:
         with sync_playwright() as p:
             print("[蝦皮購物] 啟動 Chromium 瀏覽器並加載登入會話...")
-            context = p.chromium.launch_persistent_context(
-                user_data_dir=user_data_dir,
-                headless=is_headless_env(),
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-                locale="zh-TW",
-                viewport={"width": 1280, "height": 800}
-            )
+            using_persistent = True
+            browser = None
+            try:
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_data_dir,
+                    headless=is_headless_env(),
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                    locale="zh-TW",
+                    viewport={"width": 1280, "height": 800}
+                )
+            except Exception as e_launch:
+                print(f"[蝦皮購物] 無法開啟持久化瀏覽器會話 (可能目錄被鎖定): {e_launch}。嘗試使用臨時無痕會話...")
+                using_persistent = False
+                browser = p.chromium.launch(headless=is_headless_env())
+                context = browser.new_context(
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                    locale="zh-TW",
+                    viewport={"width": 1280, "height": 800}
+                )
             
             for page_idx in range(max_pages):
                 if page_idx > 0:
-                    import time
                     time.sleep(1.0)
                 
                 page = context.new_page()
@@ -383,6 +400,8 @@ def scrape_shopee(keyword, max_pages=3):
                         pass
             
             context.close()
+            if not using_persistent and browser:
+                browser.close()
             print(f"[蝦皮購物] 成功，共取得 {len(products)} 項商品。")
             return products
     except Exception as e:
@@ -479,79 +498,114 @@ class LiveCompareHandler(SimpleHTTPRequestHandler):
         
         # Route to API endpoint
         if parsed_url.path == '/api/compare':
-            query_params = urllib.parse.parse_qs(parsed_url.query)
-            keyword = query_params.get('q', [''])[0]
-            include_surugaya = query_params.get('surugaya', ['false'])[0].lower() == 'true'
-            include_shopee = query_params.get('shopee', ['false'])[0].lower() == 'true'
-            include_amazon = query_params.get('amazon', ['false'])[0].lower() == 'true'
-            
-            if not keyword:
-                self.send_response(400)
+            try:
+                query_params = urllib.parse.parse_qs(parsed_url.query)
+                keyword = query_params.get('q', [''])[0]
+                include_surugaya = query_params.get('surugaya', ['false'])[0].lower() == 'true'
+                include_shopee = query_params.get('shopee', ['false'])[0].lower() == 'true'
+                include_amazon = query_params.get('amazon', ['false'])[0].lower() == 'true'
+                
+                if not keyword:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'Keyword parameter "q" is required'}, ensure_ascii=False).encode('utf-8'))
+                    return
+                    
+                # Parse pages count (default to 3 pages)
+                max_pages = 3
+                try:
+                    max_pages = int(query_params.get('pages', ['3'])[0])
+                    if max_pages < 1:
+                        max_pages = 3
+                except ValueError:
+                    max_pages = 3
+                    
+                print(f"\n[API 請求] 搜尋關鍵字: '{keyword}' (頁數: {max_pages}, 駿河屋: {include_surugaya}, 蝦皮: {include_shopee}, 亞馬遜: {include_amazon})")
+                
+                # Scrape PChome, Yahoo and Amazon in parallel using thread pool
+                pchome_items = []
+                yahoo_items = []
+                amazon_items = []
+                
+                workers = 2
+                if include_amazon:
+                    workers += 1
+                    
+                with ThreadPoolExecutor(max_workers=workers) as executor:
+                    future_pchome = executor.submit(scrape_pchome, keyword, max_pages)
+                    future_yahoo = executor.submit(scrape_yahoo, keyword, max_pages)
+                    
+                    future_amazon = None
+                    if include_amazon:
+                        future_amazon = executor.submit(scrape_amazon, keyword, max_pages)
+                        
+                    try:
+                        pchome_items = future_pchome.result(timeout=90)
+                    except Exception as e_pc:
+                        print(f"[PChome 24h] 失敗或超時: {e_pc}")
+                        
+                    try:
+                        yahoo_items = future_yahoo.result(timeout=90)
+                    except Exception as e_yh:
+                        print(f"[Yahoo 購物中心] 失敗或超時: {e_yh}")
+                        
+                    if include_amazon and future_amazon:
+                        try:
+                            amazon_items = future_amazon.result(timeout=90)
+                        except Exception as e_am:
+                            print(f"[Amazon 亞馬遜] 失敗或超時: {e_am}")
+                    
+                # Scrape Surugaya (synchronously as it opens a browser window)
+                surugaya_items = []
+                if include_surugaya:
+                    try:
+                        surugaya_items = scrape_surugaya(keyword)
+                    except Exception as e_su:
+                        print(f"[駿河屋] 失敗: {e_su}")
+                    
+                # Scrape Shopee (synchronously as it opens a browser window with persistent login profile)
+                shopee_items = []
+                if include_shopee:
+                    try:
+                        shopee_items = scrape_shopee(keyword, max_pages)
+                    except Exception as e_sh:
+                        print(f"[蝦皮購物] 失敗: {e_sh}")
+                    
+                all_items = pchome_items + yahoo_items + amazon_items + surugaya_items + shopee_items
+                all_items.sort(key=lambda x: x['price'])
+                
+                # Return JSON
+                self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                self.wfile.write(json.dumps({'error': 'Keyword parameter "q" is required'}, ensure_ascii=False).encode('utf-8'))
-                return
                 
-            # Parse pages count (default to 3 pages)
-            max_pages = 3
-            try:
-                max_pages = int(query_params.get('pages', ['3'])[0])
-                if max_pages < 1:
-                    max_pages = 3
-            except ValueError:
-                max_pages = 3
+                response_data = {
+                    'keyword': keyword,
+                    'items': all_items
+                }
                 
-            print(f"\n[API 請求] 搜尋關鍵字: '{keyword}' (頁數: {max_pages}, 駿河屋: {include_surugaya}, 蝦皮: {include_shopee}, 亞馬遜: {include_amazon})")
-            
-            # Scrape PChome, Yahoo and Amazon in parallel using thread pool
-            pchome_items = []
-            yahoo_items = []
-            amazon_items = []
-            
-            workers = 2
-            if include_amazon:
-                workers += 1
-                
-            with ThreadPoolExecutor(max_workers=workers) as executor:
-                future_pchome = executor.submit(scrape_pchome, keyword, max_pages)
-                future_yahoo = executor.submit(scrape_yahoo, keyword, max_pages)
-                
-                future_amazon = None
-                if include_amazon:
-                    future_amazon = executor.submit(scrape_amazon, keyword, max_pages)
-                    
-                pchome_items = future_pchome.result()
-                yahoo_items = future_yahoo.result()
-                if include_amazon:
-                    amazon_items = future_amazon.result()
-                
-            # Scrape Surugaya (synchronously as it opens a browser window)
-            surugaya_items = []
-            if include_surugaya:
-                surugaya_items = scrape_surugaya(keyword)
-                
-            # Scrape Shopee (synchronously as it opens a browser window with persistent login profile)
-            shopee_items = []
-            if include_shopee:
-                shopee_items = scrape_shopee(keyword, max_pages)
-                
-            all_items = pchome_items + yahoo_items + amazon_items + surugaya_items + shopee_items
-            all_items.sort(key=lambda x: x['price'])
-            
-            # Return JSON
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            
-            response_data = {
-                'keyword': keyword,
-                'items': all_items
-            }
-            
-            self.wfile.write(json.dumps(response_data, ensure_ascii=False).encode('utf-8'))
-            print(f"[API 回應] 成功回傳 {len(all_items)} 筆比價商品資料。\n")
+                self.wfile.write(json.dumps(response_data, ensure_ascii=False).encode('utf-8'))
+                print(f"[API 回應] 成功回傳 {len(all_items)} 筆比價商品資料。\n")
+            except Exception as e_global:
+                print(f"[API 全局錯誤] {e_global}")
+                import traceback
+                traceback.print_exc()
+                try:
+                    self.send_response(500)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    err_response = {
+                        'keyword': keyword if 'keyword' in locals() else '',
+                        'items': [],
+                        'error': f'伺服器全局錯誤: {str(e_global)}'
+                    }
+                    self.wfile.write(json.dumps(err_response, ensure_ascii=False).encode('utf-8'))
+                except Exception:
+                    pass
             
         else:
             # Default to static file server
