@@ -1,0 +1,23 @@
+.env
+.shopee_user_data/
+.roo/
+.vscode/
+*.db
+*debug*
+*results*
+amazon_results.txt
+__pycache__/
+failed_debug.png
+final_check.png
+final_fast_check.png
+debug_final.png
+pip
+surugaya_results.csv
+ssh/
+GCP_KEY.pub
+
+# Ignore other git repositories/submodules in workspace
+jimmy-resume-main/
+resume/
+0601_L4_HW2/
+Sentiment_Analysis/
