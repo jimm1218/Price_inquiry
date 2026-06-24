@@ -1,6 +1,6 @@
 # 商品即時比價與多功能儀表板系統 (Real-time Price Comparison & Dashboard)
 
-**網頁DEMO連結：[https://jimm1218.github.io/Price_inquiry/](https://price-inquiry.onrender.com/)**
+**網頁DEMO連結：(https://price-inquiry.onrender.com/)**
 
 這是一個基於 Python 後端爬蟲與前端單頁面 (SPA) 互動設計的商品即時比價系統。本專案整合了 **PChome 24h**、**Yahoo 購物中心**、**Amazon 日本亞馬遜**、**蝦皮購物 (Shopee)** 與 **駿河屋 (Surugaya)** 五大電商平台，實現跨平台、跨幣種的商品價格、銷量、圖片與即時比價數據整合儀表板。
 
