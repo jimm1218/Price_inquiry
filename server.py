@@ -252,10 +252,12 @@ def scrape_shopee(keyword, max_pages=3):
             print("[蝦皮購物] 啟動 Chromium 瀏覽器並加載登入會話...")
             using_persistent = True
             browser = None
+            chrome_channel = "chrome" if sys.platform.startswith("win") else None
             try:
                 context = p.chromium.launch_persistent_context(
                     user_data_dir=user_data_dir,
                     headless=is_headless_env(),
+                    channel=chrome_channel,
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                     locale="zh-TW",
                     viewport={"width": 1280, "height": 800},
@@ -263,13 +265,22 @@ def scrape_shopee(keyword, max_pages=3):
                     args=["--disable-blink-features=AutomationControlled"]
                 )
             except Exception as e_launch:
-                print(f"[蝦皮購物] 無法開啟持久化瀏覽器會話 (可能目錄被鎖定): {e_launch}。嘗試使用臨時無痕會話...")
+                print(f"[蝦皮購物] 無法開啟持久化瀏覽器會話 (可能目錄被鎖定或未安裝 Chrome): {e_launch}。嘗試使用臨時無痕會話...")
                 using_persistent = False
-                browser = p.chromium.launch(
-                    headless=is_headless_env(),
-                    ignore_default_args=["--enable-automation"],
-                    args=["--disable-blink-features=AutomationControlled"]
-                )
+                try:
+                    browser = p.chromium.launch(
+                        headless=is_headless_env(),
+                        channel=chrome_channel,
+                        ignore_default_args=["--enable-automation"],
+                        args=["--disable-blink-features=AutomationControlled"]
+                    )
+                except Exception:
+                    # Fallback to standard Chromium if Chrome channel is not available
+                    browser = p.chromium.launch(
+                        headless=is_headless_env(),
+                        ignore_default_args=["--enable-automation"],
+                        args=["--disable-blink-features=AutomationControlled"]
+                    )
                 context = browser.new_context(
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                     locale="zh-TW",
@@ -434,11 +445,20 @@ def scrape_surugaya(keyword):
     try:
         with sync_playwright() as p:
             # Setting headless mode dynamically based on running environment
-            browser = p.chromium.launch(
-                headless=is_headless_env(),
-                ignore_default_args=["--enable-automation"],
-                args=["--disable-blink-features=AutomationControlled"]
-            )
+            chrome_channel = "chrome" if sys.platform.startswith("win") else None
+            try:
+                browser = p.chromium.launch(
+                    headless=is_headless_env(),
+                    channel=chrome_channel,
+                    ignore_default_args=["--enable-automation"],
+                    args=["--disable-blink-features=AutomationControlled"]
+                )
+            except Exception:
+                browser = p.chromium.launch(
+                    headless=is_headless_env(),
+                    ignore_default_args=["--enable-automation"],
+                    args=["--disable-blink-features=AutomationControlled"]
+                )
             context = browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
                 locale="ja-JP"
