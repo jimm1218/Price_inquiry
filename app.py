@@ -385,39 +385,76 @@ def compare():
     except ValueError:
         max_pages = 3
 
+    # ★ 雲端環境限制頁數上限，避免 gunicorn 超時 502
+    CLOUD_MAX_PAGES = 10
+    if max_pages > CLOUD_MAX_PAGES:
+        print(f"[安全限制] 頁數 {max_pages} 超過雲端上限，已降為 {CLOUD_MAX_PAGES} 頁。")
+        max_pages = CLOUD_MAX_PAGES
+
     print(f"\n[API 請求] 搜尋關鍵字: '{keyword}' (頁數: {max_pages}, 亞馬遜: {include_amazon}, 蝦皮: {include_shopee})")
 
-    # 併發執行 PChome + Yahoo (必定爬取)
-    workers = 2
-    if include_amazon:
-        workers += 1
-
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        future_pchome = executor.submit(scrape_pchome, keyword, max_pages)
-        future_yahoo = executor.submit(scrape_yahoo, keyword, max_pages)
-
-        future_amazon = None
+    try:
+        # 併發執行 PChome + Yahoo (必定爬取)
+        workers = 2
         if include_amazon:
-            future_amazon = executor.submit(scrape_amazon, keyword, max_pages)
+            workers += 1
 
-        pchome_items = future_pchome.result()
-        yahoo_items = future_yahoo.result()
-        amazon_items = future_amazon.result() if future_amazon else []
+        pchome_items = []
+        yahoo_items = []
+        amazon_items = []
 
-    # 蝦皮 (同步，因使用 Playwright 瀏覽器)
-    shopee_items = []
-    if include_shopee:
-        shopee_items = scrape_shopee(keyword, max_pages)
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_pchome = executor.submit(scrape_pchome, keyword, max_pages)
+            future_yahoo = executor.submit(scrape_yahoo, keyword, max_pages)
 
-    all_items = pchome_items + yahoo_items + amazon_items + shopee_items
-    all_items.sort(key=lambda x: x['price'])
+            future_amazon = None
+            if include_amazon:
+                future_amazon = executor.submit(scrape_amazon, keyword, max_pages)
 
-    print(f"[API 回應] 成功回傳 {len(all_items)} 筆比價商品資料。\n")
+            # 設定超時取得結果，避免無限等待
+            try:
+                pchome_items = future_pchome.result(timeout=90)
+            except Exception as e:
+                print(f"[PChome] 超時或失敗: {e}")
 
-    return jsonify({
-        'keyword': keyword,
-        'items': all_items
-    })
+            try:
+                yahoo_items = future_yahoo.result(timeout=90)
+            except Exception as e:
+                print(f"[Yahoo] 超時或失敗: {e}")
+
+            if future_amazon:
+                try:
+                    amazon_items = future_amazon.result(timeout=90)
+                except Exception as e:
+                    print(f"[Amazon] 超時或失敗: {e}")
+
+        # 蝦皮 (同步，因使用 Playwright 瀏覽器)
+        shopee_items = []
+        if include_shopee:
+            try:
+                shopee_items = scrape_shopee(keyword, min(max_pages, 3))
+            except Exception as e:
+                print(f"[蝦皮] 失敗: {e}")
+
+        all_items = pchome_items + yahoo_items + amazon_items + shopee_items
+        all_items.sort(key=lambda x: x['price'])
+
+        print(f"[API 回應] 成功回傳 {len(all_items)} 筆比價商品資料。\n")
+
+        return jsonify({
+            'keyword': keyword,
+            'items': all_items
+        })
+
+    except Exception as e:
+        print(f"[API 錯誤] {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'keyword': keyword,
+            'items': [],
+            'error': f'伺服器處理錯誤: {str(e)}'
+        }), 500
 
 # Serve static files (JS, CSS, images)
 @app.route('/<path:filename>')
