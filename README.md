@@ -17,6 +17,7 @@ d:\data
 ├── work_report.md               # 專案開發工作日誌與架構設計報告
 ├── README.md                    # 本專案的說明文件 (本檔案)
 ├── prompt.md                    # 引導 AI 助理開發此專案的 Prompt 紀錄與指令設計
+├── requirements.txt             # 雲端部署 Python 套件依賴清單 (BS4, Playwright)
 │
 ├── practice/                    # 課堂練習與 Tkinter/Regex 等 Python 腳本練習資料夾
 ├── media/                       # 專案多媒體資源 (圖片與動畫 SVG 檔案)
