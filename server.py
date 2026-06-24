@@ -554,7 +554,7 @@ class LiveCompareHandler(SimpleHTTPRequestHandler):
             super().do_GET()
 
 def main():
-    port = 8000
+    port = int(os.environ.get('PORT', 8000))
     server_address = ('', port)
     
     # Switch working directory to server.py directory to serve static files correctly
