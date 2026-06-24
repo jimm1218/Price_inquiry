@@ -300,13 +300,19 @@ def scrape_shopee(keyword, max_pages=3):
                         lang_btn.first.click()
                         time.sleep(1.5)
                         
-                    if page.locator('text="登入以繼續"').count() > 0 or page.locator('text="頁面無法顯示"').count() > 0:
-                        print("[蝦皮購物] 檢測到登入牆。請在開啟的瀏覽器視窗中完成登入/驗證。程式將暫停等待...")
+                    is_blocked = (
+                        "verify/traffic" in page.url or 
+                        "verify" in page.url or
+                        page.locator('text="登入以繼續"').count() > 0 or 
+                        page.locator('text="頁面無法顯示"').count() > 0
+                    )
+                    if is_blocked:
+                        print("[蝦皮購物] 檢測到人機滑塊驗證碼或登入牆！請在彈出的瀏覽器視窗中「完成滑塊拼圖」或點選「登入」。程式將暫停等待驗證成功...")
                         try:
-                            page.wait_for_selector('div[data-sqe="item"]', timeout=60000)
-                            print("[蝦皮購物] 驗證成功，開始載入商品！")
+                            page.wait_for_selector('div[data-sqe="item"]', timeout=90000)
+                            print("[蝦皮購物] 驗證成功，已進入商品頁面！")
                         except Exception:
-                            print("[蝦皮購物] 等待登入/驗證超時，跳過本頁。")
+                            print("[蝦皮購物] 等待驗證/登入超時，跳過本頁。")
                             page.close()
                             continue
                     
