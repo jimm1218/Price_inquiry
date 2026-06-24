@@ -14,7 +14,6 @@ d:\data
 ├── server.py                    # 後端極簡 HTTP 伺服器 (提供 /api/compare 即時比價 API)
 ├── crawler.py                   # 後端命令列比價爬蟲 (支援將結果寫入 results.js 作為靜態備用數據)
 ├── results.js                   # 比價結果快取備用檔案
-├── work_report.md               # 專案開發工作日誌與架構設計報告
 ├── README.md                    # 本專案的說明文件 (本檔案)
 ├── prompt.md                    # 引導 AI 助理開發此專案的 Prompt 紀錄與指令設計
 └── requirements.txt             # 雲端部署 Python 套件依賴清單 (BS4, Playwright)
