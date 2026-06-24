@@ -1,3 +1,6 @@
-streamlit
+flask
+gunicorn
 requests
 beautifulsoup4
+streamlit
+playwright
