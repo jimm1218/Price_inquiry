@@ -1,6 +1,6 @@
 # 商品即時比價與多功能儀表板系統 (Real-time Price Comparison & Dashboard)
 
-**網頁DEMO連結：https://jimm1218.github.io/Price_inquiry/**
+**網頁DEMO連結：(https://price-inquiry.onrender.com/)**
 
 這是一個基於 Python 後端爬蟲與前端單頁面 (SPA) 互動設計的商品即時比價系統。本專案整合了 **PChome 24h**、**Yahoo 購物中心**、**Amazon 日本亞馬遜**、**蝦皮購物 (Shopee)** 與 **駿河屋 (Surugaya)** 五大電商平台，實現跨平台、跨幣種的商品價格、銷量、圖片與即時比價數據整合儀表板。
 
@@ -17,11 +17,8 @@ d:\data
 ├── work_report.md               # 專案開發工作日誌與架構設計報告
 ├── README.md                    # 本專案的說明文件 (本檔案)
 ├── prompt.md                    # 引導 AI 助理開發此專案的 Prompt 紀錄與指令設計
-├── requirements.txt             # 雲端部署 Python 套件依賴清單 (BS4, Playwright)
-│
-├── practice/                    # 課堂練習與 Tkinter/Regex 等 Python 腳本練習資料夾
-├── media/                       # 專案多媒體資源 (圖片與動畫 SVG 檔案)
-└── ssh/                         # 雲端部署相關安全金鑰存放區 (GCP SSH 金鑰等)
+└── requirements.txt             # 雲端部署 Python 套件依賴清單 (BS4, Playwright)
+
 ```
 
 ---
